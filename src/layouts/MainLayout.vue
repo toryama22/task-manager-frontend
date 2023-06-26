@@ -47,7 +47,7 @@
     </q-drawer>
 
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered>
-      <!-- drawer content -->
+      drawer content
     </q-drawer>
 
     <q-page-container>
@@ -68,18 +68,21 @@ const menuList = [
   },
   {
     icon: "send",
-    label: "Outbox",
+    label: "Доски dragable",
     separator: false,
+    path: "/board"
   },
   {
-    icon: "delete",
-    label: "Trash",
+    icon: "dashboard",
+    label: "Task list",
     separator: false,
+    path: "/task-list"
   },
   {
-    icon: "error",
-    label: "Spam",
-    separator: true,
+    icon: "calendar_today",
+    label: "Сетка досок",
+    separator: false,
+    path: "/boars-grid"
   },
   {
     icon: "settings",

@@ -15,8 +15,12 @@
 
           <q-card-section class="q-pt-none">
             <q-input
-              label="Название должности *"
-              v-model="editedPosition.positionTitle"
+              label="Название доски"
+              v-model="editedProject.projectName"
+            ></q-input>
+            <q-input
+              label="Описание доски"
+              v-model="editedProject.description"
             ></q-input>
           </q-card-section>
 
@@ -26,7 +30,6 @@
               label="Отмена" 
               v-close-popup 
             />
-            
             <q-btn
               label="Создать"
               color="primary"
@@ -39,13 +42,14 @@
     </q-dialog>
 
     <q-table
-      title="Должности"
+      title="Доски"
       color="secondary"
       :loading="loading"
-      :rows="positions"
+      :rows="projects"
       :columns="columns"
       :separator="separator"
       v-model:pagination="pagination"
+      @row-click="redirectToSimpleBoard"
     >
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
@@ -67,27 +71,24 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
-import ConfirmDialog from "src/components/ConfirmDialog.vue";
+/*import draggable from "vuedraggable";*/
 import { api } from "boot/axios";
+import ConfirmDialog from "src/components/ConfirmDialog.vue";
+export default {
+  name: "two-list-headerslots",
 
-export default defineComponent({
   components: {
     ConfirmDialog,
   },
 
-  name: "PositionsPage",
-
   data() {
     return {
       loading: true,
-      positions: [],
-
+      projects: [],
       separator: "horizontal",
+
       editDialogVisible: false,
       deleteConfirmDialogVisible: false,
-      editDialogTitle: "",
-      fixed: false,
 
       pagination: {
         rowsPerPage: 50,
@@ -95,12 +96,13 @@ export default defineComponent({
         //descending: true,
       },
 
-      editedPosition: {
+      editedProject: {
         id: null,
         createdDate: null,
         modifiedDate: null,
         deletedDate: null,
-        positionTitle: null,
+        projectName: null,
+        description: null,
       },
 
       columns: [
@@ -113,8 +115,15 @@ export default defineComponent({
         },
         {
           name: "positionTitle",
-          label: "Должность",
-          field: "positionTitle",
+          label: "Название",
+          field: "projectName",
+          align: "center",
+          sortable: true,
+        },
+        {
+          name: "positionTitle",
+          label: "Описание",
+          field: "description",
           align: "center",
           sortable: true,
         },
@@ -142,8 +151,8 @@ export default defineComponent({
   },
 
   methods: {
-    async createPosition(editedPosition) {
-      await api.post("/position", editedPosition); /*.then((response) => {
+    async createProject(editedProject) {
+      await api.post("/project", editedProject); /*.then((response) => {
       if (response.status === 200) {
         this.merchants.push(response.data);
         this.closeEditDialog();
@@ -153,10 +162,10 @@ export default defineComponent({
     });*/
     },
 
-    async fetchPositions() {
-      await api.get("/position").then((response) => {
+    async fetchProjects() {
+      await api.get("/project").then((response) => {
         if (response.status === 200) {
-          this.positions = response.data;
+          this.projects = response.data;
           this.loading = false;
         } else {
           this.$router.push("/connection-error");
@@ -164,12 +173,12 @@ export default defineComponent({
       });
     },
 
-    async updatePosition(position) {
-      await api.put("/position/" + position.id, position).then((response) => {
+    async updateProject(project) {
+      await api.put("/project/" + project.id, project).then((response) => {
         if (response.status === 200) {
-          position = response.data;
-          const index = this.positions.findIndex((p) => p.id === position.id);
-          Object.assign(this.positions[index], position);
+          project = response.data;
+          const index = this.projects.findIndex((p) => p.id === project.id);
+          Object.assign(this.projects[index], project);
           this.closeEditDialog();
         } else {
           this.$router.push("/connection-error");
@@ -178,11 +187,11 @@ export default defineComponent({
       });
     },
 
-    async deletePosition(position) {
-      await api.delete("/position/" + position.id).then((response) => {
+    async deleteProject(project) {
+      await api.delete("/project/" + project.id).then((response) => {
         if (response.status === 200) {
-          const index = this.positions.findIndex((p) => p.id === position.id);
-          this.positions.splice(index, 1);
+          const index = this.projects.findIndex((p) => p.id === project.id);
+          this.projects.splice(index, 1);
           this.closeDeleteConfirmDialog();
         } else {
           this.$router.push("/connection-error");
@@ -191,14 +200,19 @@ export default defineComponent({
       });
     },
 
-    onEdit(position) {
-      this.editedPosition = Object.assign({}, position);
-      this.editDialogVisible = true;
-      this.editDialogTitle = this.editedPosition.id == null ? "Новая должность" : "Редактирование";
+    redirectToSimpleBoard() {
+      this.$router.push("error-not-found")
     },
 
-    showDeleteConfirmDialog(position) {
-      this.editedPosition = Object.assign({}, position);
+    onEdit(project) {
+      this.editedProject = Object.assign({}, project);
+      this.editDialogVisible = true;
+      this.editDialogTitle =
+        this.editedProject.id == null ? "Новый проект" : "Редактирование";
+    },
+
+    showDeleteConfirmDialog(project) {
+      this.editedProject = Object.assign({}, project);
       this.deleteConfirmDialogVisible = true;
     },
 
@@ -214,32 +228,36 @@ export default defineComponent({
     },
 
     onSaveClicked() {
-      if (this.editedPosition.id == null) {
-        this.createPosition(this.editedPosition);
+      if (this.editedProject.id == null) {
+        this.createProject(this.editedProject);
+        this.fetchProjects();
       } else {
-        this.updatePosition(this.editedPosition);
+        this.updateProject(this.editedProject);
+        this.fetchProjects();
       }
     },
 
     closeEditDialog() {
       this.editDialogVisible = false;
-      this.editedPosition = {
+      this.editedProject = {
         id: null,
         createdDate: null,
         modifiedDate: null,
-        deletedDate: null,
-        positionTitle: null,
+        projectName: null,
+        description: null,
       };
     },
 
     onDeleteConfirmed() {
-      this.deletePosition(this.editedPosition);
+      this.deleteProject(this.editedProject);
       this.deleteConfirmDialogVisible = false;
+      this.fetchProjects();
     },
   },
 
   mounted() {
-    this.fetchPositions();
+    this.fetchProjects();
   },
-});
+};
 </script>
+<style scoped></style>
