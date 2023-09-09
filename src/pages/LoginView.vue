@@ -62,9 +62,8 @@ const login = async () => {
       email: email.value,
       password: password.value,
     });
-    //axios.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
     userStore.setUserDetails(res);
-    //api.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
+    api.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
     router.push('/')
   } catch (err) {
     console.log(err);
