@@ -11,10 +11,7 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none q-gutter-md">
-              <q-input
-                label="Электронная почта"
-                v-model="userCred.username"
-              >
+              <q-input label="Электронная почта" v-model="email">
                 <template v-slot:prepend>
                   <q-icon name="email" />
                 </template>
@@ -22,9 +19,7 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <q-input 
-                label="Пароль" 
-                v-model="userCred.password">
+              <q-input label="Пароль" v-model="password">
                 <template v-slot:prepend>
                   <q-icon name="lock" />
                 </template>
@@ -46,38 +41,33 @@
   </q-layout>
 </template>
 
-<script>
-import { api } from "src/boot/axios";
-import { defineComponent } from "vue";
+<script setup>
+import { ref } from "vue";
+import axios from "axios";
+import { useUserStore } from "src/stores/user-store";
+import { useRouter } from "vue-router";
 
-export default defineComponent({
-  name: "LoginForm",
+//const router = useRouter();
+const userStore = useUserStore();
 
-  data() {
-    return {
-      userCred: {
-        username: "",
-        password: "",
-      },
-    };
-  },
+let errors = ref([]);
+let email = ref(null);
+let password = ref(null);
 
-  methods: {
-    login() {
-      api
-        .post("/auth/authenticate", this.userCred)
-        .then((response) => {
-          this.$store.commit("login", response);
-          this.$http.defaults.headers.common["Authorization"] =
-            response.data.token;
-          this.$router.push("/");
-        })
-        .catch((reason) => {
-          console.log(reason);
-          this.loginError = true;
-          this.errorMessage = "Ошибка входа!";
-        });
-    },
-  },
-});
+const login = async () => {
+  errors.value = [];
+
+  try {
+    let res = await axios.post("/auth/authenticate", {
+      email: email.value,
+      password: password.value,
+    });
+    axios.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
+    userStore.setUserDetails(res);
+
+    //router.push('/')
+  } catch (err) {
+    errors.value = err.response.data.errors;
+  }
+};
 </script>
