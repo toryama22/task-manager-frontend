@@ -16,7 +16,7 @@ const api = axios.create({
 });
 
 if (sessionStorage.getItem('token') !== null) {
-  api.defaults.headers.common["Authorization"] = sessionStorage.getItem('token');
+  api.defaults.headers.common["Authorization"] = "Bearer " + sessionStorage.getItem('token');
 }
 
 export default boot(({ app }) => {

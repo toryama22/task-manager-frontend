@@ -154,6 +154,7 @@ export default defineComponent({
     },
 
     async fetchPositions() {
+      //console.log(sessionStorage.getItem('token'))
       await api.get("/position").then((response) => {
         if (response.status === 200) {
           this.positions = response.data;

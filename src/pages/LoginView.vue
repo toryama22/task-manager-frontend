@@ -46,8 +46,9 @@ import { ref } from "vue";
 import axios from "axios";
 import { useUserStore } from "src/stores/user-store";
 import { useRouter } from "vue-router";
+import { api } from "src/boot/axios";
 
-//const router = useRouter();
+const router = useRouter();
 const userStore = useUserStore();
 
 let errors = ref([]);
@@ -55,19 +56,18 @@ let email = ref(null);
 let password = ref(null);
 
 const login = async () => {
-  errors.value = [];
 
   try {
-    let res = await axios.post("/auth/authenticate", {
+    let res = await api.post("/auth/authenticate", {
       email: email.value,
       password: password.value,
     });
-    axios.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
+    //axios.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
     userStore.setUserDetails(res);
-
-    //router.push('/')
+    //api.defaults.headers.common["Authorization"] = "Bearer " + res.data.token;
+    router.push('/')
   } catch (err) {
-    errors.value = err.response.data.errors;
+    console.log(err);
   }
 };
 </script>
